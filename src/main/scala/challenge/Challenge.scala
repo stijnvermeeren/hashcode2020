@@ -1,5 +1,7 @@
 package challenge
 
+import scala.annotation.tailrec
+
 object Challenge extends App {
   val datasets = Seq(
     "a_example",
@@ -14,29 +16,9 @@ object Challenge extends App {
     dataset <- datasets
   } {
     val problem = ProblemData.readFromFile(s"challenge/$dataset.txt")
-    val scoring = new Scoring(problem)
+    val solver = new Solver(problem)
 
-    val libraries = problem.libraries
-
-    val bestLibraries = libraries.sortBy(library => -scoring.maxScorePerLibrary(library))
-
-    val librarySelections = bestLibraries.take(problem.days).foldLeft(Seq.empty[LibrarySelection]) {
-      case (previousSelection, nextLibrary) =>
-        val scannedBooks = scoring.mostValuableBookIds(nextLibrary) map { bookId =>
-          ScannedBook(bookId, scoring.bookValue(bookId))
-        }
-
-        val startScanningDay = previousSelection.lastOption match {
-          case Some(selection) => selection.startScanningDay + nextLibrary.singUpTime
-          case None => nextLibrary.singUpTime
-        }
-
-        previousSelection :+ LibrarySelection(
-          nextLibrary,
-          scannedBooks,
-          startScanningDay = startScanningDay
-        )
-    }
+    val librarySelections = solver.solveRec(day = 0, selected = Seq.empty)
 
     val solution = Solution(librarySelections)
 
@@ -44,4 +26,5 @@ object Challenge extends App {
     val simulation = new Simulation(problem, solution)
     println(s"Estimated score for $dataset: ${simulation.run()}")
   }
+
 }

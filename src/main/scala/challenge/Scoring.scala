@@ -5,8 +5,8 @@ class Scoring(problem: ProblemData) {
     library.books.sortBy(bookId => -bookValue(bookId))
   }
 
-  def maxScorePerLibrary(library: Library): Int = {
-    val scanningDays = problem.days - library.singUpTime
+  def maxScorePerLibrary(library: Library, day: Int = 0): Int = {
+    val scanningDays = problem.days - library.singUpTime - day
     val booksToBeScanned = scanningDays * library.booksPerDay
 
     mostValuableBookIds(library).take(booksToBeScanned).map(bookValue).sum
