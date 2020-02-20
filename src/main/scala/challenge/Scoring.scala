@@ -24,6 +24,6 @@ class Scoring(problem: ProblemData) {
       0
     }
 
-    (score / math.pow(library.singUpTime, 0.91)).intValue
+    (score / math.pow(library.singUpTime, 0.9)).intValue
   }
 }
