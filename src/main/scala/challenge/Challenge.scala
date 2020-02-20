@@ -24,7 +24,7 @@ object Challenge extends App {
       val scannedBooks = scoring.mostValuableBookIds(lib) map { bookId =>
         ScannedBook(bookId, scoring.bookValue(bookId))
       }
-      LibrarySelection(lib.id, scannedBooks, startScanningDay = 0) // TODO update correct startScanningDay
+      LibrarySelection(lib.id, scannedBooks, startScanningDay = 0, booksPerDay = lib.booksPerDay) // TODO update correct startScanningDay
     }
 
     val solution = Solution(librarySelections)
