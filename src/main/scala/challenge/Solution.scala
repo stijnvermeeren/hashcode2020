@@ -7,8 +7,8 @@ case class Solution(librarySelections: Seq[LibrarySelection]) {
   def writeToFile(path: String): Unit = {
     val pw = new PrintWriter(new File(path))
     pw.write(s"${librarySelections.size}\n")
-    for (LibrarySelection(id, books, _, _) <- librarySelections) {
-      pw.write(s"$id ${books.size}\n")
+    for (LibrarySelection(library, books, _) <- librarySelections) {
+      pw.write(s"${library.id} ${books.size}\n")
       pw.write(s"${books.map(_.bookId).mkString(" ")}\n")
     }
     pw.close()
@@ -19,6 +19,6 @@ case class Solution(librarySelections: Seq[LibrarySelection]) {
   }
 }
 
-case class LibrarySelection(libraryId: Int, scannedBooks: Seq[ScannedBook], startScanningDay: Int, booksPerDay: Int)
+case class LibrarySelection(library: Library, scannedBooks: Seq[ScannedBook], startScanningDay: Int)
 
 case class ScannedBook(bookId: Int, score: Int)

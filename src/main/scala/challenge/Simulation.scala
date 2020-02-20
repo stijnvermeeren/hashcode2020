@@ -2,16 +2,30 @@ package challenge
 
 class Simulation(problemData: ProblemData, solution: Solution) {
   def run(): Int = {
-    (0 until problemData.days).foldLeft(SimulationState(scannedBookIds = Set.empty, score = 0)) {
+    val finalState = (0 until problemData.days).foldLeft(SimulationState(scannedBookIds = Set.empty, score = 0)) {
       case (previousState, dayId) =>
-        val bookIds: Set[Int] = solution.librarySelections.map{ selection =>
-          if (dayId >= selection.startScanningDay) {
-            selection.drop(selection.booksPerDay)
+        val scannedBooks: Set[ScannedBook] = solution.librarySelections.flatMap{ selection =>
+          val daysScanning = dayId - selection.startScanningDay
+          if (daysScanning >= 0) {
+            val booksPerDay = selection.library.booksPerDay
+            selection.scannedBooks.drop(booksPerDay * daysScanning).take(booksPerDay)
           } else {
             Set.empty
           }
-        }
+        }.toSet
+
+        val newValue = scannedBooks
+          .filterNot(scanned => previousState.scannedBookIds.contains(scanned.bookId))
+          .map(_.score)
+          .sum
+
+        SimulationState(
+          scannedBookIds = previousState.scannedBookIds ++ scannedBooks.map(_.bookId),
+          score = previousState.score + newValue
+        )
     }
+
+    finalState.score
   }
 }
 

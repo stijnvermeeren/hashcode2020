@@ -20,16 +20,28 @@ object Challenge extends App {
 
     val bestLibraries = libraries.sortBy(library => -scoring.maxScorePerLibrary(library))
 
-    val librarySelections = bestLibraries.take(problem.days) map { lib =>
-      val scannedBooks = scoring.mostValuableBookIds(lib) map { bookId =>
-        ScannedBook(bookId, scoring.bookValue(bookId))
-      }
-      LibrarySelection(lib.id, scannedBooks, startScanningDay = 0, booksPerDay = lib.booksPerDay) // TODO update correct startScanningDay
+    val librarySelections = bestLibraries.take(problem.days).foldLeft(Seq.empty[LibrarySelection]) {
+      case (previousSelection, nextLibrary) =>
+        val scannedBooks = scoring.mostValuableBookIds(nextLibrary) map { bookId =>
+          ScannedBook(bookId, scoring.bookValue(bookId))
+        }
+
+        val startScanningDay = previousSelection.lastOption match {
+          case Some(selection) => selection.startScanningDay + nextLibrary.singUpTime
+          case None => nextLibrary.singUpTime
+        }
+
+        previousSelection :+ LibrarySelection(
+          nextLibrary,
+          scannedBooks,
+          startScanningDay = startScanningDay
+        )
     }
 
     val solution = Solution(librarySelections)
 
     solution.writeToFile(s"output/$dataset.txt")
-    println(s"Estimated score for $dataset: ${solution.score()}")
+    val simulation = new Simulation(problem, solution)
+    println(s"Estimated score for $dataset: ${simulation.run()}")
   }
 }
