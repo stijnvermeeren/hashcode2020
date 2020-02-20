@@ -23,8 +23,8 @@ object Challenge extends App {
     val solution = Solution(librarySelections)
 
     solution.writeToFile(s"output/$dataset.txt")
-    val simulation = new Simulation(problem, solution)
-    println(s"Estimated score for $dataset: ${simulation.run()}")
+    val score = solver.simulate(solution.librarySelections)
+    println(s"Estimated score for $dataset: $score")
   }
 
 }
