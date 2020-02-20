@@ -11,7 +11,7 @@ object Challenge extends App {
   )
 
   for {
-    dataset <- datasets.headOption
+    dataset <- datasets
   } {
     val problem = ProblemData.readFromFile(s"challenge/$dataset.txt")
     val scoring = new Scoring(problem)
@@ -20,10 +20,16 @@ object Challenge extends App {
 
     val bestLibraries = libraries.sortBy(library => -scoring.maxScorePerLibrary(library))
 
-    bestLibraries.take(3) foreach { lib =>
-      println(lib)
-      println(lib)
-      println(scoring.maxScorePerLibrary(lib))
+    val librarySelections = bestLibraries.take(problem.days) map { lib =>
+      val scannedBooks = scoring.mostValuableBookIds(lib) map { bookId =>
+        ScannedBook(bookId, scoring.bookValue(bookId))
+      }
+      LibrarySelection(lib.id, scannedBooks)
     }
+
+    val solution = Solution(librarySelections)
+
+    solution.writeToFile(s"output/$dataset.txt")
+    println(s"Estimated score for $dataset: ${solution.score()}")
   }
 }

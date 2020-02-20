@@ -11,6 +11,7 @@ case class ProblemData(
 )
 
 case class Library(
+  id: Int,
   bookCount: Int,
   singUpTime: Int,
   booksPerDay: Int,
@@ -24,11 +25,12 @@ object ProblemData {
     val line1 = lines.next().split(" ").map(Integer.parseInt)
     val line2 = lines.next().split(" ").map(Integer.parseInt)
 
-    val libraries = for (i <- 0 until line1(1)) yield {
+    val libraries = for (libraryId <- 0 until line1(1)) yield {
       val libraryLine1 = lines.next().split(" ").map(Integer.parseInt)
       val libraryLine2 = lines.next().split(" ").map(Integer.parseInt)
 
       Library(
+        id = libraryId,
         bookCount = libraryLine1(0),
         singUpTime = libraryLine1(1),
         booksPerDay = libraryLine1(2),
