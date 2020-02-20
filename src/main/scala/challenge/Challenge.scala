@@ -6,10 +6,10 @@ object Challenge extends App {
   val datasets = Seq(
     "a_example",
     "b_read_on",
-    "c_incunabula",
-    "d_tough_choices",
     "e_so_many_books",
-    "f_libraries_of_the_world"
+    "f_libraries_of_the_world",
+    "c_incunabula",
+    "d_tough_choices"
   )
 
   for {
@@ -18,13 +18,12 @@ object Challenge extends App {
     val problem = ProblemData.readFromFile(s"challenge/$dataset.txt")
     val solver = new Solver(problem)
 
-    val librarySelections = solver.solveRec(day = 0, selected = Seq.empty)
+    val solveState = solver.solveRec(day = 0, SolveState.empty)
 
-    val solution = Solution(librarySelections)
+    val solution = Solution(solveState.selected)
 
     solution.writeToFile(s"output/$dataset.txt")
-    val score = solver.simulate(solution.librarySelections)
-    println(s"Estimated score for $dataset: $score")
+    println(s"Estimated score for $dataset: ${solveState.simulationState.score}")
   }
 
 }

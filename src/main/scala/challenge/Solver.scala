@@ -8,36 +8,74 @@ class Solver(problem: ProblemData) {
   val scoring = new Scoring(problem)
 
   @tailrec
-  final def solveRec(day: Int, selected: Seq[LibrarySelection]): Seq[LibrarySelection] = {
+  final def solveRec(day: Int, solveState: SolveState): SolveState = {
     if (day > problem.days) {
-      selected
+      solveState
     } else {
-      val selectedLibraryIds: Set[Int] = selected.map(_.library.id).toSet
+      val selectedLibraryIds: Set[Int] = solveState.selected.map(_.library.id).toSet
 
       val candidateLibraries = libraries.par
         .filterNot(library => selectedLibraryIds.contains(library.id))
 
       if (candidateLibraries.nonEmpty) {
-        val bestLibrary = candidateLibraries
-          .maxBy(library => scoring.maxScorePerLibrary(library, day))
+        val alreadyScannedBooks = simulate(solveState.selected).scannedBookIds
 
-        val newSelected = selected :+ LibrarySelection(
+        val bestLibrary = candidateLibraries
+          .maxBy(library => scoring.maxScorePerLibrary(library, alreadyScannedBooks, day))
+
+        // println(s"Selected library ${bestLibrary.id}")
+
+        val selectedBooks = bestLibrary
+          .scoredAndSortedBooks
+          .filterNot(scannedBook => alreadyScannedBooks.contains(scannedBook.bookId))
+
+        val newSelection = LibrarySelection(
           bestLibrary,
-          bestLibrary.scoredAndSortedBooks,
+          selectedBooks,
           startScanningDay = day + bestLibrary.singUpTime
         )
-        solveRec(day + bestLibrary.singUpTime, newSelected)
+
+        val newSolveState = SolveState(
+          solveState.selected :+ newSelection,
+          simulateStep(solveState.simulationState, newSelection)
+        )
+
+        solveRec(day + bestLibrary.singUpTime, newSolveState)
       } else {
-        selected
+        solveState
       }
     }
   }
 
 
-  def simulate(librarySelections: Seq[LibrarySelection]): Int = {
-    val finalState = (0 until problem.days).foldLeft(SimulationState(scannedBookIds = Set.empty, score = 0)) {
+  def simulateStep(state: SimulationState, newSelection: LibrarySelection): SimulationState = {
+    (0 until problem.days).foldLeft(state) {
       case (previousState, dayId) =>
-        val scannedBooks: Set[ScannedBook] = librarySelections.flatMap{ selection =>
+        val daysScanning = dayId - newSelection.startScanningDay
+        val newScannedBooks = if (daysScanning >= 0) {
+          val booksPerDay = newSelection.library.booksPerDay
+          newSelection.scannedBooks.drop(booksPerDay * daysScanning).take(booksPerDay)
+        } else {
+          Set.empty
+        }
+
+        val newValue = newScannedBooks
+          .filterNot(scanned => previousState.scannedBookIds.contains(scanned.bookId))
+          .toSeq
+          .map(_.score)
+          .sum
+
+        SimulationState(
+          scannedBookIds = previousState.scannedBookIds ++ newScannedBooks.map(_.bookId),
+          score = previousState.score + newValue
+        )
+    }
+  }
+
+  def simulate(librarySelections: Seq[LibrarySelection]): SimulationState = {
+    (0 until problem.days).foldLeft(SimulationState(scannedBookIds = Set.empty, score = 0)) {
+      case (previousState, dayId) =>
+        val scannedBooks = librarySelections.par.flatMap{ selection =>
           val daysScanning = dayId - selection.startScanningDay
           if (daysScanning >= 0) {
             val booksPerDay = selection.library.booksPerDay
@@ -58,9 +96,17 @@ class Solver(problem: ProblemData) {
           score = previousState.score + newValue
         )
     }
-
-    finalState.score
   }
+}
 
-  case class SimulationState(scannedBookIds: Set[Int], score: Int)
+case class SimulationState(scannedBookIds: Set[Int], score: Int)
+
+object SimulationState {
+  val empty = SimulationState(Set.empty, 0)
+}
+
+case class SolveState(selected: Seq[LibrarySelection], simulationState: SimulationState)
+
+object SolveState {
+  val empty = SolveState(Seq.empty, SimulationState.empty)
 }
