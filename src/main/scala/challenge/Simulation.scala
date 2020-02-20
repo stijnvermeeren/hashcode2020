@@ -16,6 +16,7 @@ class Simulation(problemData: ProblemData, solution: Solution) {
 
         val newValue = scannedBooks
           .filterNot(scanned => previousState.scannedBookIds.contains(scanned.bookId))
+          .toSeq
           .map(_.score)
           .sum
 
