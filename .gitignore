@@ -1,0 +1,10 @@
+.DS_Store
+*.iml
+*.sc
+.idea/*
+
+
+/project/boot/
+/project/plugins/project
+
+target/
