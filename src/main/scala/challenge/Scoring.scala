@@ -24,6 +24,6 @@ class Scoring(problem: ProblemData) {
       0
     }
 
-    100 * score / library.singUpTime
+    (score / math.sqrt(library.singUpTime)).intValue
   }
 }
