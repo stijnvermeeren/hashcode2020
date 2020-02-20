@@ -1,5 +1,7 @@
 package challenge
 
+import scala.collection.parallel.CollectionConverters._
+
 object Scoring {
   private def mostValuableBookIds(library: Library): Seq[LibraryBook] = {
     library.books.sortBy(_.score).reverse
@@ -11,8 +13,8 @@ object Scoring {
       MaxScoreLibrary(library.id, 0, Seq.empty)
     } else {
       val booksToBeScanned = scanningDays * library.booksPerDay
-      val booksToScan = mostValuableBookIds(library).filterNot(book => usedBooks.contains(book.id)).take(booksToBeScanned)
-      MaxScoreLibrary(library.id, booksToScan.map(_.score).sum, booksToScan.map(_.id))
+      val booksToScan = mostValuableBookIds(library).par.filterNot(book => usedBooks.contains(book.id)).take(booksToBeScanned)
+      MaxScoreLibrary(library.id, booksToScan.map(_.score).sum, booksToScan.map(_.id).seq)
     }
   }
 }

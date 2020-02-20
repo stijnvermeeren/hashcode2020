@@ -1,6 +1,7 @@
 package challenge
 
 import scala.annotation.tailrec
+import scala.collection.parallel.CollectionConverters._
 
 object Challenge extends App {
   val datasets = Seq(
@@ -17,7 +18,7 @@ object Challenge extends App {
   } {
     val problem = ProblemData.readFromFile(s"challenge/$dataset.txt")
 
-    val solution = Solution(calculateSelection(problem.days, problem.libraries))
+    val solution = Solution(calculateSelection(problem.days, problem.libraries, problem.bookCount).filter(_.books.nonEmpty))
 
     solution.writeToFile(s"output/$dataset.txt")
     println(s"Estimated score for $dataset: ${solution.score}")
@@ -25,14 +26,14 @@ object Challenge extends App {
 
 
   @tailrec
-  def calculateSelection(days: Int, libs: Seq[Library], res: Seq[MaxScoreLibrary] = Seq.empty, usedBooks: Set[Int] = Set.empty): Seq[MaxScoreLibrary] = {
-    if (libs.isEmpty) {
+  def calculateSelection(days: Int, libs: Seq[Library], allBooks: Int, res: Seq[MaxScoreLibrary] = Seq.empty, usedBooks: Set[Int] = Set.empty): Seq[MaxScoreLibrary] = {
+    if (libs.isEmpty || usedBooks.size == allBooks) {
       res
     } else {
-      val topLibraries = libs.map(Scoring.maxScorePerLibrary(days, _, usedBooks)).sortBy(library => library.score).reverse
+      val topLibraries = libs.par.map(Scoring.maxScorePerLibrary(days, _, usedBooks)).seq.sortBy(library => library.score).reverse
       val bestLibrary = topLibraries.head
-      val bestLibraryInitial = libs.find(_.id == bestLibrary.id).get
-      calculateSelection(days - bestLibraryInitial.singUpTime, libs.filterNot(_.id == bestLibrary.id), res :+ bestLibrary, usedBooks ++ bestLibrary.books.toSet)
+      val bestLibraryInitial = libs.par.find(_.id == bestLibrary.id).get
+      calculateSelection(days - bestLibraryInitial.singUpTime, libs.par.filterNot(_.id == bestLibrary.id).seq, allBooks, res :+ bestLibrary, usedBooks ++ bestLibrary.books.toSet)
     }
   }
 }
