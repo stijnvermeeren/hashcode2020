@@ -18,7 +18,7 @@ class Solver(problem: ProblemData) {
         .filterNot(library => selectedLibraryIds.contains(library.id))
 
       if (candidateLibraries.nonEmpty) {
-        val alreadyScannedBooks = simulate(solveState.selected).scannedBookIds
+        val alreadyScannedBooks = solveState.simulationState.scannedBookIds
 
         val bestLibrary = candidateLibraries
           .maxBy(library => scoring.maxScorePerLibrary(library, alreadyScannedBooks, day))
@@ -95,6 +95,60 @@ class Solver(problem: ProblemData) {
           scannedBookIds = previousState.scannedBookIds ++ scannedBooks.map(_.bookId),
           score = previousState.score + newValue
         )
+    }
+  }
+
+  case class LibraryBook(libraryId: Int, bookId: Int)
+
+  def byUnique(): Seq[Library] = {
+    val data = for {
+      library <- problem.libraries
+      book <- library.books
+    } yield LibraryBook(library.id, book)
+
+    val bookCounts = data.groupBy(_.bookId) map {
+      case (bookId, items) => bookId -> items.size
+    }
+
+    def score(library: Library): Double = {
+      library.books.map(bookCounts.apply).map(1.0 / _).sum
+    }
+
+    problem.libraries.sortBy(score)
+  }
+
+
+  @tailrec
+  final def solveRecUnique(day: Int, solveState: SolveState, nextLibraries: Seq[Library]): SolveState = {
+    if (day > problem.days) {
+      solveState
+    } else {
+      if (nextLibraries.nonEmpty) {
+        val alreadyScannedBooks = solveState.simulationState.scannedBookIds
+
+        val bestLibrary = nextLibraries.head
+
+        // println(s"Selected library ${bestLibrary.id}")
+
+        val selectedBooks = bestLibrary
+          .scoredAndSortedBooks
+          .filterNot(scannedBook => alreadyScannedBooks.contains(scannedBook.bookId))
+
+        val newSelection = LibrarySelection(
+          bestLibrary,
+          selectedBooks,
+          startScanningDay = day + bestLibrary.singUpTime
+        )
+
+        val newSolveState = SolveState(
+          solveState.selected :+ newSelection,
+          simulateStep(solveState.simulationState, newSelection)
+        )
+
+        solveRecUnique(day + bestLibrary.singUpTime, newSolveState, nextLibraries.tail)
+      } else {
+        solveState
+      }
     }
   }
 }
