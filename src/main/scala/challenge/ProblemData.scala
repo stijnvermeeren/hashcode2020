@@ -7,7 +7,7 @@ case class ProblemData(
   libraryCount: Int,
   days: Int,
   bookValues: Seq[Int],
-  libraries: Library
+  libraries: Seq[Library]
 )
 
 case class Library(
