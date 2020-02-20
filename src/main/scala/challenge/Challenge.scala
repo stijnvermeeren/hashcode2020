@@ -1,5 +1,7 @@
 package challenge
 
+import scala.annotation.tailrec
+
 object Challenge extends App {
   val datasets = Seq(
     "a_example",
@@ -14,22 +16,23 @@ object Challenge extends App {
     dataset <- datasets
   } {
     val problem = ProblemData.readFromFile(s"challenge/$dataset.txt")
-    val scoring = new Scoring(problem)
 
-    val libraries = problem.libraries
-
-    val bestLibraries = libraries.sortBy(library => -scoring.maxScorePerLibrary(library))
-
-    val librarySelections = bestLibraries.take(problem.days) map { lib =>
-      val scannedBooks = scoring.mostValuableBookIds(lib) map { bookId =>
-        ScannedBook(bookId, scoring.bookValue(bookId))
-      }
-      LibrarySelection(lib.id, scannedBooks)
-    }
-
-    val solution = Solution(librarySelections)
+    val solution = Solution(calculateSelection(problem.days, problem.libraries))
 
     solution.writeToFile(s"output/$dataset.txt")
-    println(s"Estimated score for $dataset: ${solution.score()}")
+    println(s"Estimated score for $dataset: ${solution.score}")
+  }
+
+
+  @tailrec
+  def calculateSelection(days: Int, libs: Seq[Library], res: Seq[MaxScoreLibrary] = Seq.empty, usedBooks: Set[Int] = Set.empty): Seq[MaxScoreLibrary] = {
+    if (libs.isEmpty) {
+      res
+    } else {
+      val topLibraries = libs.map(Scoring.maxScorePerLibrary(days, _, usedBooks)).sortBy(library => library.score).reverse
+      val bestLibrary = topLibraries.head
+      val bestLibraryInitial = libs.find(_.id == bestLibrary.id).get
+      calculateSelection(days - bestLibraryInitial.singUpTime, libs.filterNot(_.id == bestLibrary.id), res :+ bestLibrary, usedBooks ++ bestLibrary.books.toSet)
+    }
   }
 }
