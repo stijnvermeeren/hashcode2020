@@ -4,10 +4,10 @@ import scala.annotation.tailrec
 
 object Challenge extends App {
   val datasets = Seq(
+    "f_libraries_of_the_world",
     "a_example",
     "b_read_on",
     "e_so_many_books",
-    "f_libraries_of_the_world",
     "c_incunabula",
     "d_tough_choices"
   )

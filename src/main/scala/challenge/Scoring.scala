@@ -24,10 +24,6 @@ class Scoring(problem: ProblemData) {
       0
     }
 
-    if (scanningDays > library.singUpTime / 10) {
-      score - (booksToBeScanned - scannedBooks.size) * avgScore / 10
-    } else {
-      score
-    }
+    100 * score / library.singUpTime
   }
 }
