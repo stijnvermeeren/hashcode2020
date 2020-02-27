@@ -1,6 +1,6 @@
 package practice
 
-object PracticeProblem extends App {
+object Main extends App {
   val datasets = Seq("a_example", "b_small", "c_medium", "d_quite_big", "e_also_big")
 
   for {

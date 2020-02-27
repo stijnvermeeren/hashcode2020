@@ -2,20 +2,34 @@ package challenge
 
 import java.io.{File, PrintWriter}
 
-case class Solution(librarySelections: Seq[LibrarySelection]) {
+
+/**
+ * Keeps track of the state of the greedy search.
+ * The value `selected` contains the partial solutions (which library to sign-up and which books to scan from them),
+ *   `scannedBookIds` contains the ids of all the scanned books and `score` contains their total value.
+ */
+case class Solution(
+  selected: Seq[LibrarySelection],
+  scannedBookIds: Set[Int],
+  score: Int
+) {
   def writeToFile(path: String): Unit = {
     val pw = new PrintWriter(new File(path))
-    pw.write(s"${librarySelections.size}\n")
-    for (LibrarySelection(library, books, _) <- librarySelections) {
+    pw.write(s"${selected.size}\n")
+    for (LibrarySelection(library, books, _) <- selected) {
       pw.write(s"${library.id} ${books.size}\n")
       pw.write(s"${books.map(_.bookId).mkString(" ")}\n")
     }
     pw.close()
   }
+}
 
-  def score(): Int = {
-    librarySelections.flatMap(_.scannedBooks.map(_.score)).sum
-  }
+object Solution {
+  val empty = Solution(
+    selected = Seq.empty,
+    scannedBookIds = Set.empty,
+    score = 0
+  )
 }
 
 /**

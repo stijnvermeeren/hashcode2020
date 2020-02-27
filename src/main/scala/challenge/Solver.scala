@@ -12,17 +12,17 @@ class Solver(problem: ProblemData) {
    * considering the books that will already be scanned anyway by previously selected libraries.
    */
   @tailrec
-  final def solveRec(day: Int, solveState: SolveState): SolveState = {
+  final def solveRec(day: Int, solution: Solution): Solution = {
     if (day > problem.days) {
-      solveState
+      solution
     } else {
-      val selectedLibraryIds: Set[Int] = solveState.selected.map(_.library.id).toSet
+      val selectedLibraryIds: Set[Int] = solution.selected.map(_.library.id).toSet
 
       val candidateLibraries = libraries.par
         .filterNot(library => selectedLibraryIds.contains(library.id))
 
       if (candidateLibraries.nonEmpty) {
-        val alreadyScannedBooks = solveState.scannedBookIds
+        val alreadyScannedBooks = solution.scannedBookIds
 
         val bestLibrary = candidateLibraries
           .maxBy(scoreLibrary(alreadyScannedBooks, day))
@@ -37,11 +37,11 @@ class Solver(problem: ProblemData) {
           startScanningDay = day + bestLibrary.signUpTime
         )
 
-        val newSolveState = addLibrary(solveState, newSelection)
+        val newSolveState = addLibrary(solution, newSelection)
 
         solveRec(day + bestLibrary.signUpTime, newSolveState)
       } else {
-        solveState
+        solution
       }
     }
   }
@@ -81,41 +81,27 @@ class Solver(problem: ProblemData) {
   }
 
 
-  def addLibrary(state: SolveState, newSelection: LibrarySelection): SolveState = {
+  def addLibrary(solution: Solution, newSelection: LibrarySelection): Solution = {
     val booksPerDay = newSelection.library.booksPerDay
     val daysScanning = problem.days - newSelection.startScanningDay
 
     val newScannedBooks = newSelection.scannedBooks
-      .filterNot(scanned => state.scannedBookIds.contains(scanned.bookId)) // ensure again that we don't double-count any books
+      .filterNot(scanned => solution.scannedBookIds.contains(scanned.bookId)) // ensure again that we don't double-count any books
       .take(booksPerDay * daysScanning)
 
-    val newValue = newScannedBooks
-      .map(_.score)
-      .sum
+    if (newScannedBooks.nonEmpty) {
+      val newValue = newScannedBooks
+        .map(_.score)
+        .sum
 
-    SolveState(
-      state.selected :+ newSelection,
-      scannedBookIds = state.scannedBookIds ++ newScannedBooks.map(_.bookId),
-      score = state.score + newValue
-    )
+      Solution(
+        solution.selected :+ newSelection,
+        scannedBookIds = solution.scannedBookIds ++ newScannedBooks.map(_.bookId),
+        score = solution.score + newValue
+      )
+    } else {
+      // don't add libraries that don't get to scan any books to the solution
+      solution
+    }
   }
-}
-
-/**
- * Keeps track of the state of the greedy search.
- * The value `selected` contains the partial solutions (which library to sign-up and which books to scan from them),
- *   `scannedBookIds` contains the ids of all the scanned books and `score` contains their total value.
- */
-case class SolveState(
-  selected: Seq[LibrarySelection],
-  scannedBookIds: Set[Int],
-  score: Int
-)
-
-object SolveState {
-  val empty = SolveState(
-    selected = Seq.empty,
-    scannedBookIds = Set.empty,
-    score = 0
-  )
 }

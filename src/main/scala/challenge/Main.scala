@@ -1,6 +1,6 @@
 package challenge
 
-object Challenge extends App {
+object Main extends App {
   val datasets = Seq(
     "a_example",
     "b_read_on",
@@ -16,12 +16,10 @@ object Challenge extends App {
     val problem = ProblemData.readFromFile(s"challenge/$dataset.txt")
     val solver = new Solver(problem)
 
-    val solveState = solver.solveRec(day = 0, SolveState.empty)
-
-    val solution = Solution(solveState.selected)
+    val solution = solver.solveRec(day = 0, Solution.empty)
 
     solution.writeToFile(s"output/$dataset.txt")
-    println(s"Calculated score for $dataset: ${solveState.score}")
+    println(s"Calculated score for $dataset: ${solution.score}")
   }
 
 }
