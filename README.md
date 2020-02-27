@@ -22,6 +22,15 @@ with additional support from
 
 - Stefan Jacobs ([stefanjacobs123](https://github.com/stefanjacobs123/))
 
+## Method
+
+Our solution is essentially a greedy search: whenever we can sign up another library, pick the one with the highest _score_, considering the books that will already be scanned anyway by previously selected libraries.
+
+The _score_ of a library is composed of...
+
+- The maximum value that we can still get from the library (i.e. by signing it up immediately and scanning the books that are not already scanned from other libraries from highest value to lowest value).
+- The number of days it takes to sign up this library (we essentially pick a library with maximal value per day of sign-up time).
+
 ## Running
 
 The Scala code can be compiled and executed using [sbt](https://www.scala-sbt.org/).
