@@ -5,7 +5,6 @@ import scala.collection.parallel.CollectionConverters._
 
 class Solver(problem: ProblemData, config: Config) {
   val libraries = problem.libraries
-  val scoring = new Scoring(problem)
 
   /**
    * Greedy search: whenever we can sign up another library, pick the one with the highest "score" (see scoreLibarary)
