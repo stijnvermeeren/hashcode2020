@@ -1,15 +1,13 @@
 package challenge
 
-import scala.annotation.tailrec
-
 object Challenge extends App {
   val datasets = Seq(
-    "f_libraries_of_the_world",
-    "e_so_many_books",
     "a_example",
     "b_read_on",
     "c_incunabula",
-    "d_tough_choices"
+    "d_tough_choices",
+    "e_so_many_books",
+    "f_libraries_of_the_world"
   )
 
   for {
@@ -23,7 +21,7 @@ object Challenge extends App {
     val solution = Solution(solveState.selected)
 
     solution.writeToFile(s"output/$dataset.txt")
-    println(s"Estimated score for $dataset: ${solveState.simulationState.score}")
+    println(s"Calculated score for $dataset: ${solveState.score}")
   }
 
 }

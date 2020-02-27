@@ -3,7 +3,6 @@ package challenge
 import java.io.{File, PrintWriter}
 
 case class Solution(librarySelections: Seq[LibrarySelection]) {
-
   def writeToFile(path: String): Unit = {
     val pw = new PrintWriter(new File(path))
     pw.write(s"${librarySelections.size}\n")
@@ -19,6 +18,12 @@ case class Solution(librarySelections: Seq[LibrarySelection]) {
   }
 }
 
+/**
+ * A triple of
+ * - a Library object
+ * - the order for the books to be scanned from this library and their scores
+ * - at what day this library will be ready to start scanning
+ */
 case class LibrarySelection(library: Library, scannedBooks: Seq[ScannedBook], startScanningDay: Int)
 
 case class ScannedBook(bookId: Int, score: Int)

@@ -13,7 +13,7 @@ case class ProblemData(
 case class Library(
   id: Int,
   bookCount: Int,
-  singUpTime: Int,
+  signUpTime: Int,
   booksPerDay: Int,
   books: Seq[Int],
   scoredAndSortedBooks: Seq[ScannedBook]
@@ -33,7 +33,7 @@ object ProblemData {
       Library(
         id = libraryId,
         bookCount = libraryLine1(0),
-        singUpTime = libraryLine1(1),
+        signUpTime = libraryLine1(1),
         booksPerDay = libraryLine1(2),
         books = libraryLine2,
         scoredAndSortedBooks = {
