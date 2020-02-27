@@ -29,3 +29,5 @@ The Scala code can be compiled and executed using [sbt](https://www.scala-sbt.or
 ```
 sbt "runMain challenge.Main"
 ```
+
+The output will be written to the `output` directory.

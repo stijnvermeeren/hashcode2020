@@ -3,7 +3,7 @@ package challenge
 import scala.annotation.tailrec
 import scala.collection.parallel.CollectionConverters._
 
-class Solver(problem: ProblemData) {
+class Solver(problem: ProblemData, config: Config) {
   val libraries = problem.libraries
   val scoring = new Scoring(problem)
 
@@ -49,12 +49,15 @@ class Solver(problem: ProblemData) {
   /**
    * Score potential libraries by the maximum value that we can get from them, divided by the number of days it takes
    * to sign up this library, i.e. maximize by value per day of sign-up time.
+   *
+   * For some datasets, we obtained slightly better results by raising the sign up time to some power (less than 1),
+   * which has to be fine-tuned by hand.
    */
   def scoreLibrary(
     alreadyScannedBooks: Set[Int],
     day: Int
   )(library: Library): Double = {
-    maxValue(library, alreadyScannedBooks, day).toDouble / library.signUpTime
+    maxValue(library, alreadyScannedBooks, day).toDouble / math.pow(library.signUpTime, config.exponent)
   }
 
   /**

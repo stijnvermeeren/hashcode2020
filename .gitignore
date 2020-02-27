@@ -8,3 +8,6 @@
 /project/plugins/project
 
 target/
+
+practice_problem/*.out
+output/
